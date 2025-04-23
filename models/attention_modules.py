@@ -89,15 +89,17 @@ class EntityGuidedCrossAttention(nn.Module):
         Returns:
             refined_support_features: [N*K, D]
         """
-        N_K, D = support_features.shape
+        N_K, D, H, W = support_features.shape
         N = entity_vectors.shape[0]  # number of classes
 
         # Project support features
+        support_features = support_features.view(N_K, D, H * W).permute(0, 2, 1)
+        support_features = support_features.mean(dim=1)
         K_proj = self.key_proj(support_features)      # [N*K, D]
         V_proj = self.value_proj(support_features)    # [N*K, D]
-
+        
         refined_features = torch.zeros_like(support_features)
-
+        
         for class_idx in range(N):
             class_mask = (support_labels == class_idx)  # [N*K]
             if class_mask.sum() == 0:

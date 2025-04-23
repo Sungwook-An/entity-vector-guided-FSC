@@ -18,9 +18,20 @@ class MatchingNetworkClassifier(nn.Module):
         Returns:
             logits: [N*Q, N]
         """
+        if query_features.dim() == 4:
+            query_features = query_features.mean(dim=[2, 3])
+        
+        if support_features.dim() == 3:
+            N_K, H_W, D = support_features.shape
+            support_features = support_features.mean(dim=1)
+        else:
+            D = support_features.shape[1]
+            
+        if support_labels.dim() == 2:
+            support_labels = support_labels.view(-1)
+            
         NQ = query_features.size(0)
         NK = support_features.size(0)
-        D = query_features.size(1)
 
         # Normalize features for cosine similarity
         if self.metric == "cosine":
@@ -34,7 +45,7 @@ class MatchingNetworkClassifier(nn.Module):
         else:
             raise ValueError(f"Unsupported metric: {self.metric}")
 
-        # One-hot encode support labels
+        # num_classes = support_labels.max().item() + 1
         num_classes = support_labels.max().item() + 1
         one_hot_labels = F.one_hot(support_labels, num_classes=num_classes).float()  # [N*K, N]
 

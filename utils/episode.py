@@ -1,7 +1,44 @@
-import torch
 from torch.utils.data import Sampler
 import random
 from collections import defaultdict
+
+class FewShotEpisodeSamplerTrain(Sampler):
+    def __init__(self, dataset, batch_size):
+        """
+        A standard sampler that shuffles all data and yields indices in batch-sized chunks.
+
+        Args:
+            dataset: torch Dataset with `.labels` or `.targets`
+            batch_size: number of samples per batch
+        """
+        self.dataset = dataset
+        self.batch_size = batch_size
+
+        # support for both .labels and .targets
+        if hasattr(dataset, "labels"):
+            self.labels = dataset.labels
+        elif hasattr(dataset, "targets"):
+            self.labels = dataset.targets
+        else:
+            raise ValueError("Dataset must have `.labels` or `.targets` attribute")
+
+        self.indices = list(range(len(self.labels)))
+
+    def __len__(self):
+        return (len(self.indices) + self.batch_size - 1) // self.batch_size
+    
+    def __iter__(self):
+        random.shuffle(self.indices)
+        batch = []
+        for idx in self.indices:
+            batch.append(idx)
+            if len(batch) == self.batch_size:
+                yield batch
+                batch = []
+        # yield last batch if not empty
+        if batch:
+            yield batch
+
 
 class FewShotEpisodeSampler(Sampler):
     def __init__(self, dataset, num_episodes, n_way, k_shot, q_query):

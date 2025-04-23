@@ -9,7 +9,7 @@ def generate_entity_tokens(dataset_name, class_name):
     corresponding to the given class name.
 
     Args:
-        class_name (str): e.g., "goldfish"
+        class_name (str): e.g., "apple"
 
     Returns:
         List[str]: List of semantic entity tokens for the class

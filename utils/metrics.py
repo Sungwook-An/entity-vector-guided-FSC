@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 
 class AverageMeter:
     """
@@ -48,3 +49,13 @@ def accuracy(logits, targets, topk=(1,)):
             results.append(acc.item())
 
         return results[0] if len(results) == 1 else results
+    
+def Cosine_classifier(support, query, temperature=1):
+    """Cosine classifier"""
+    # normalize for cosine distance
+    # l = cosine_similarity(query.unsqueeze(1), support.unsqueeze(0), -1)
+    proto = F.normalize(support, dim=-1)
+    query = F.normalize(query, dim=-1)
+    logits = torch.mm(query, proto.permute([1, 0])) / temperature
+    predict = torch.argmax(logits, dim=1)
+    return logits, predict

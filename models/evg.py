@@ -24,32 +24,28 @@ class EVGNetwork(nn.Module):
             
         Returns:
             Tensor of shape (B, D): final entity representation (v_e)
-        """
-        print(class_embedding.shape)
-        print(entity_embeddings.shape)
-        # B, N, D = entity_embeddings.shape
-        
+        """        
         # Project Q, K, V
-        Q = self.query_proj(class_embedding).unsqueeze(1) # (B, 1, H)
-        K = self.key_proj(entity_embeddings)              # (B, N, H)
-        V = self.value_proj(entity_embeddings)             # (B, N, H)
+        Q = self.query_proj(class_embedding).unsqueeze(0) # (1, H)
+        K = self.key_proj(entity_embeddings)              # (N, H)
+        V = self.value_proj(entity_embeddings)            # (N, H)
         
         # Compute attention
-        # attn_logits = torch.matmul(Q, K.transpose(-2, -1)) / (self.hidden_dim ** 0.5) # (B, 1, N)
-        attn_logits = torch.einsum('bhd,bnd->bhn', Q, K) / (self.hidden_dim ** 0.5) # (B, 1, N)
-        attn_scores = F.softmax(attn_logits, dim = -1) # (B, 1, N)
+        attn_logits = torch.matmul(Q, K.T) / (self.hidden_dim ** 0.5) # (1, N)
+        attn_scores = F.softmax(attn_logits, dim = -1) # (1, N)
         
         # Top-k selection
-        topk_scores, topk_indices = torch.topk(attn_scores, self.top_k, dim=-1) # (B, 1, top_k)
-        
-        topk_indices = topk_indices.squeeze(1) # (B, top_k)
-        topk_scores = topk_scores.squeeze(1)   # (B, top_k)
-        
-        expanded_indices = topk_indices.unsqueeze(-1).expand(-1, self.top_k, self.hidden_dim)
+        k = min(self.top_k, attn_scores.shape[-1])
+        if k < self.top_k:
+            1
+        topk_scores, topk_indices = torch.topk(attn_scores, k, dim=-1)
+        topk_indices = topk_indices.squeeze(0) # (top_k)
+        topk_scores = topk_scores.squeeze(0)   # (top_k)
         
         # Gather top-k value vectors and and apply weights
-        topk_values = torch.gather(V, 1, expanded_indices) # (B, top_k, H)
+        topk_values = V[topk_indices] # (top_k, H)
         weighted_sum = torch.sum(topk_values * topk_scores.unsqueeze(-1), dim=1)
+        weighted_sum = torch.sum(topk_values * topk_scores.unsqueeze(-1), dim=0) # (H)
         
         # Final projection
         final_vector = self.output_proj(weighted_sum)
@@ -94,7 +90,7 @@ if __name__ == "__main__":
     encoder = TextEncoder(encoder_name='bert', projection_dim=512, device=device)
     
     class_emb = encoder([class_name]).to(device)
-    entity_embs = encoder(entities).unsqueeze(0).to(device)
+    entity_embs = encoder(entities).to(device)
     
     evg = EVGNetwork(input_dim=512, top_k=5, hidden_dim=512, output_dim=640).to(device)
     

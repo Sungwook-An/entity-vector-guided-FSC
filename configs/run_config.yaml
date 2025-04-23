@@ -1,0 +1,21 @@
+dataset: fc100
+data_root: /root/INFUSE/database
+
+n_way: 5
+k_shot: 1
+q_query: 15
+num_episodes: 100
+num_val_episodes: 600
+batch_size: 128
+num_workers: 4
+
+epochs: 50
+lr: 0.0001
+feature_dim: 640
+metric: cosine
+classifier_temperature: 1.0
+
+image_backbone: resnet
+image_encoder_ckpt: database/checkpoints/ResNet-FC100.pth
+text_backbone: bert
+
