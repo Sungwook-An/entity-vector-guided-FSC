@@ -3,7 +3,7 @@ import torch.nn as nn
 
 from models.resnet12 import Res12
 from models.text_encoder import TextEncoder
-from models.evg import EVGNetwork
+from models.evg import EVGNetwork, MultiHeadEVGNetwork
 from models.attention_modules import EntityGuidedCrossAttention
 from models.classifier import MatchingNetworkClassifier
 
@@ -16,12 +16,21 @@ class INFUSEModel(nn.Module):
         # modules
         self.image_encoder = Res12(**args.image_encoder_config)
         self.text_encoder = TextEncoder(**args.text_encoder_config)
-        self.evg = EVGNetwork(**args.evg_config)
+        ########## Single-head attn EVG ##########
+        # self.evg = EVGNetwork(**args.evg_config)
+        ########## Multi-head attn EVG ##########
+        self.evg = MultiHeadEVGNetwork(**args.evg_config)
         self.cross_attn = EntityGuidedCrossAttention(args)
         self.classifier = MatchingNetworkClassifier(args)
         self.projector = nn.Linear(
             args.text_encoder_config["projection_dim"],
             args.evg_config["output_dim"]
+        )
+        # 1x1 conv for key and value
+        self.kv_conv = nn.Conv2d(
+            in_channels=self.image_encoder.output_dim,
+            out_channels=self.image_encoder.output_dim,
+            kernel_size=1
         )
         
         self.args = args
@@ -56,6 +65,7 @@ class INFUSEModel(nn.Module):
         """
         # 1. image encoding
         Z_s = self.image_encoder(support_images)  # [N*K, D]
+        Z_s = self.kv_conv(Z_s)
         Z_q = self.image_encoder(query_images)      # [N*Q, D]
 
         # 2. text encoding: class_name -> entity tokens -> token embeddings

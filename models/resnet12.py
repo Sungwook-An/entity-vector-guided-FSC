@@ -81,8 +81,10 @@ class ResNet(nn.Module):
         self.layer2 = self._make_layer(block, 160, stride=2, drop_rate=drop_rate)
         self.layer3 = self._make_layer(block, 320, stride=2, drop_rate=drop_rate, drop_block=drop_block,
                                        block_size=dropblock_size)
-        self.layer4 = self._make_layer(block, 640, stride=2, drop_rate=drop_rate, drop_block=drop_block,
+        self.output_dim = 640
+        self.layer4 = self._make_layer(block, self.output_dim, stride=2, drop_rate=drop_rate, drop_block=drop_block,
                                        block_size=dropblock_size)
+        
         if avg_pool:
             # self.avgpool = nn.AvgPool2d(5, stride=1)
             self.avgpool = nn.AdaptiveAvgPool2d(output_size=(1, 1))

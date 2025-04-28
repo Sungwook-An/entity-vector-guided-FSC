@@ -4,14 +4,10 @@ data_root: /root/INFUSE/database
 n_way: 5
 k_shot: 1
 q_query: 15
-num_episodes: 500
-num_val_episodes: 1000
+num_test_episodes: 1000
 batch_size: 128
 num_workers: 4
 
-epochs: 50
-lr: 0.0001
-weight_decay: 0.00001
 feature_dim: 640
 # cosine, euclidean
 metric: cosine
@@ -22,4 +18,7 @@ image_backbone: resnet
 image_encoder_ckpt: database/checkpoints/ResNet-FC100.pth
 # bert, clip-vit
 text_backbone: bert
+
+test_ckpt_path: checkpoints/infuse_best.pth
+
 

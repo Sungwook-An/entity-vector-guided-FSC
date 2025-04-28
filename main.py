@@ -45,9 +45,21 @@ def main(args):
     train_dataset = get_dataset(args.dataset, split='train', transform=args.train_transform, root=args.data_root)
     val_dataset = get_dataset(args.dataset, split='val', transform=args.test_transform, root=args.data_root)
 
+    # Batch-based training
+    # train_loader = DataLoader(
+    #     train_dataset,
+    #     batch_sampler=FewShotEpisodeSamplerTrain(train_dataset, args.batch_size),
+    #     num_workers=4,
+    #     collate_fn=lambda batch: [
+    #         torch.stack([item[0] for item in batch]),
+    #         torch.tensor([item[1] for item in batch])
+    #     ]
+    # )
+    
+    # Episode-based training
     train_loader = DataLoader(
         train_dataset,
-        batch_sampler=FewShotEpisodeSamplerTrain(train_dataset, args.batch_size),
+        batch_sampler=FewShotEpisodeSampler(train_dataset, args.num_episodes, args.n_way, args.k_shot, args.q_query),
         num_workers=4,
         collate_fn=lambda batch: [
             torch.stack([item[0] for item in batch]),
@@ -59,7 +71,6 @@ def main(args):
         val_dataset,
         batch_sampler=FewShotEpisodeSampler(val_dataset, args.num_val_episodes, args.n_way, args.k_shot, args.q_query),
         num_workers=4,
-        # collate_fn=lambda batch: [torch.stack([ToTensor()(item[0]) for item in batch]), torch.tensor([item[1] for item in batch])]
         collate_fn=lambda batch: [
             torch.stack([item[0] for item in batch]),
             torch.tensor([item[1] for item in batch])
@@ -79,7 +90,8 @@ def main(args):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(
         filter(lambda p: p.requires_grad, model.parameters()), 
-        lr=args.lr
+        lr=args.lr,
+        weight_decay=args.weight_decay
     )
     
     max_acc = 0.0
@@ -101,7 +113,10 @@ def main(args):
 
         log_metrics(epoch=epoch,
                     train_loss=train_loss, train_acc=train_acc,
-                    val_loss=val_loss, val_acc=val_acc)        
+                    val_loss=val_loss, val_acc=val_acc)
+        
+        if epoch == args.epochs:
+            torch.save(model.state_dict(), f"checkpoints/infuse_last.pth")
 
 if __name__ == "__main__":
     import argparse
