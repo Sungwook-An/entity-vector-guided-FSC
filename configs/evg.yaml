@@ -1,5 +1,5 @@
 input_dim: 512
 hidden_dim: 512
 output_dim: 640
-num_attn_heads: 8
+num_attn_heads: 64
 top_k: 5

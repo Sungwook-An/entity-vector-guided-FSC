@@ -59,16 +59,3 @@ class TextEncoder(nn.Module):
             text_features = self.projector(text_features)
             
         return text_features
-
-########################################################
-#############  Checking the implementation #############
-########################################################
-if __name__ == "__main__":
-    # encoder = TextEncoder('bert')
-    encoder = TextEncoder('bert', projection_dim=128)
-    sample_texts = ["red apple", "shiny green apple"]
-    features = encoder(sample_texts)
-    print("Feature shape:", features.shape)
-########################################################
-############  End of implementation check ##############
-########################################################

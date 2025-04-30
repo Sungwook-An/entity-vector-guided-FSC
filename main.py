@@ -1,5 +1,3 @@
-# main.py
-
 import torch
 from torch import nn, optim
 from torchvision.transforms import ToTensor
@@ -114,9 +112,6 @@ def main(args):
         log_metrics(epoch=epoch,
                     train_loss=train_loss, train_acc=train_acc,
                     val_loss=val_loss, val_acc=val_acc)
-        
-        if epoch == args.epochs:
-            torch.save(model.state_dict(), f"checkpoints/infuse_last.pth")
 
 if __name__ == "__main__":
     import argparse

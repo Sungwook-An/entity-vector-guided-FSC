@@ -131,23 +131,3 @@ def Res12(keep_prob=1.0, avg_pool=False, **kwargs):
     """
     model = ResNet(BasicBlock, keep_prob=keep_prob, avg_pool=avg_pool, **kwargs)
     return model
-
-
-########################################################
-#############  Checking the implementation #############
-########################################################
-if __name__ == "__main__":
-    import torch
-    
-    dummy_input = torch.randn(4, 3, 84, 84)
-    
-    model = Res12(keep_prob=0.9, avg_pool=False, drop_rate=0.1, drop_block=True, dropblock_size=5)
-    model.eval()
-    
-    with torch.no_grad():
-        output = model(dummy_input)
-        
-    print("Output shape:", output.shape) # torch.Size([4, 640, 5, 5])
-########################################################
-############  End of implementation check ##############
-########################################################

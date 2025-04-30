@@ -120,30 +120,3 @@ class EntityGuidedCrossAttention(nn.Module):
             refined_features[class_mask] = refined
 
         return refined_features
-
-
-########################################################
-#############  Checking the implementation #############
-########################################################
-if __name__ == "__main__":
-    batch_size = 4
-    image_dim = 640
-    height = 5
-    width = 5
-    text_dim = 640
-
-    image_feat = torch.randn(batch_size, image_dim, height, width)
-    text_feat = torch.randn(batch_size, text_dim)
-
-    print("== Channel-wise Cross Attention ==")
-    channel_attn = ChannelWiseAttention(image_dim=image_dim, text_dim=text_dim)
-    out1 = channel_attn(image_feat, text_feat)
-    print("Output shape (Channel-wise):", out1.shape)
-
-    print("\n== General Cross Attention ==")
-    cross_attn = CrossAttention(image_dim=image_dim, text_dim=text_dim)
-    out2 = cross_attn(image_feat, text_feat)
-    print("Output shape (Cross Attention):", out2.shape)
-########################################################
-############  End of implementation check ##############
-########################################################

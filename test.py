@@ -34,6 +34,8 @@ def main(args):
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
+    
+    print(f"Loaded model from {args.test_ckpt_path}")
 
     criterion = torch.nn.CrossEntropyLoss()
 

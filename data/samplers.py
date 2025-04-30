@@ -53,49 +53,4 @@ class CategoriesSampler:
             query_indices = torch.stack(query_indices).view(-1)
             
             yield support_indices, query_indices
-            
-
-########################################################
-#############  Checking the implementation #############
-########################################################
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    from collections import Counter
-
-    labels = np.random.randint(0, 10, size=1000)
-
-    sampler = CategoriesSampler(labels, n_batch=2, n_way=5, n_shot=1, n_query=3)
-
-    for episode_idx, (support_idx, query_idx) in enumerate(sampler):
-        print(f"\n=== Episode {episode_idx} ===:")
-        print(f"Support indices: {support_idx.tolist()}")
-        print(f"Query indices: {query_idx.tolist()}")
         
-        # Visualize the distribution of classes in the support and query sets
-        support_labels = labels[support_idx]
-        query_labels = labels[query_idx]
-        
-        support_counter = Counter(support_labels)
-        query_counter = Counter(query_labels)
-        
-        print("Support labels:", support_labels)
-        print("Query labels:", query_labels)
-        
-        fig, axes = plt.subplots(1, 2, figsize=(10, 3))
-        x, h = zip(*Counter(support_labels.tolist()).items())
-        axes[0].bar(x, h)
-        axes[0].set_title('Support Set Class Distribution')
-        
-        x, h = zip(*Counter(query_labels.tolist()).items())
-        axes[1].bar(x, h)
-        axes[1].set_title('Query Set Class Distribution')
-        # plt.savefig(f"episode_{episode_idx}_distribution.png")
-        plt.show()
-########################################################
-############  End of implementation check ##############
-########################################################
-
-
-
-
-
